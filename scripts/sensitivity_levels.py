@@ -52,7 +52,7 @@ LEVEL_2: frozenset[str] = frozenset({
     # Criminal / investigative data
     "user.criminal_history",
     # Convictions, opinions and affiliation, gender
-    "user.demographic.gender"
+    "user.demographic.gender",
     "user.demographic.political_opinion",
     "user.demographic.race_ethnicity",
     "user.demographic.religious_belief",
