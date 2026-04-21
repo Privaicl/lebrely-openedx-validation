@@ -44,7 +44,7 @@ Los otros tres scripts de análisis no requieren `OPENEDX_REPO`: leen los artefa
 1. **Inventario** (`scripts/extract_models.py`): parsea todos los `models.py` de Open edX con tree-sitter y extrae 271 modelos Django, `data/openedx_inventory.csv` y `data/openedx_models.json`.
 2. **Estratificación y muestra** (`scripts/stratify_and_sample.py`): produce `data/openedx_sample.csv`.
 
-   - **2a. Asignación de estrato.** Cada modelo Django se asigna a 1 de 5 estratos vía un mapping explícito `django_app > estrato` (22 apps nombradas). Apps que no aparecen en el mapping caen en el estrato `operational` por defecto. Estratos y apps:
+   - **2a. Asignación de estrato.** Cada modelo Django se asigna a 1 de 5 estratos vía un mapping explícito `django_app -> estrato` (22 apps nombradas). Apps que no aparecen en el mapping (46, cubriendo 125 de los 271 modelos) caen en el estrato `operational` por defecto. Estratos y apps:
      - **identity**: `student`, `user_api`, `third_party_auth`, `external_user_ids`, `user_tours`.
      - **academic**: `courseware`, `certificates`, `credit`, `grades`, `program_enrollments`, `course_modes`, `entitlements`, `course_goals`.
      - **content**: `bulk_email`, `django_comment_common`, `discussions`, `notifications`, `bookmarks`, `teams`, `survey`.
@@ -126,7 +126,7 @@ The other three analysis scripts do not require `OPENEDX_REPO`: they read the ar
 1. **Inventory** (`scripts/extract_models.py`): parses every `models.py` under Open edX with tree-sitter and extracts 271 Django models, `data/openedx_inventory.csv` and `data/openedx_models.json`.
 2. **Stratification and sampling** (`scripts/stratify_and_sample.py`): produces `data/openedx_sample.csv`.
 
-   - **2a. Stratum assignment.** Each Django model is assigned to one of 5 strata via an explicit `django_app > stratum` mapping (22 named apps). Apps not present in the mapping fall into the default `operational` stratum. Strata and apps:
+   - **2a. Stratum assignment.** Each Django model is assigned to one of 5 strata via an explicit `django_app -> stratum` mapping (22 named apps). Apps not present in the mapping (46, covering 125 of the 271 models) fall into the default `operational` stratum. Strata and apps:
      - **identity**: `student`, `user_api`, `third_party_auth`, `external_user_ids`, `user_tours`.
      - **academic**: `courseware`, `certificates`, `credit`, `grades`, `program_enrollments`, `course_modes`, `entitlements`, `course_goals`.
      - **content**: `bulk_email`, `django_comment_common`, `discussions`, `notifications`, `bookmarks`, `teams`, `survey`.
