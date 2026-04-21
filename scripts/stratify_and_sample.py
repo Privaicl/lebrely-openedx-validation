@@ -18,9 +18,10 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-INPUT_CSV = Path(__file__).parent / "openedx_inventory.csv"
-INPUT_JSON = Path(__file__).parent / "openedx_models.json"
-OUTPUT_CSV = Path(__file__).parent / "openedx_sample.csv"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+INPUT_CSV = REPO_ROOT / "data" / "openedx_inventory.csv"
+INPUT_JSON = REPO_ROOT / "data" / "openedx_models.json"
+OUTPUT_CSV = REPO_ROOT / "data" / "openedx_sample.csv"
 
 SEED = 42
 TABLES_PER_STRATUM = 5
@@ -131,6 +132,7 @@ def main() -> None:
     with OUTPUT_CSV.open("w", newline="") as f:
         writer = csv.DictWriter(
             f,
+            lineterminator="\n",
             fieldnames=[
                 "stratum",
                 "django_app",

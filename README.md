@@ -23,6 +23,22 @@ Lebrely es el clasificador automático de datos de [Privai](https://privai.cl). 
 
 Los scripts de análisis (`compare_and_evaluate.py`, `ablation_report.py`, `stratify_and_sample.py`, `extract_models.py`) SÍ corren sin Lebrely y permiten reproducir todas las tablas y figuras del abstract a partir de las predicciones ya almacenadas.
 
+## Setup
+
+Requiere Python 3.10+. Instalar dependencias:
+
+```
+pip install -r requirements.txt
+```
+
+`extract_models.py` adicionalmente requiere un checkout local de Open edX (`edx-platform`) y la variable de entorno `OPENEDX_REPO` apuntando a él:
+
+```
+export OPENEDX_REPO=/ruta/a/edx-platform
+```
+
+Los otros tres scripts de análisis no requieren `OPENEDX_REPO`: leen los artefactos ya almacenados en `data/` y `classification/`, y regeneran los reportes y figuras bajo `reports/`.
+
 ## Verificación del Clasificador (resumen)
 
 1. **Inventario** (`scripts/extract_models.py`): parsea todos los `models.py` de Open edX con tree-sitter y extrae 271 modelos Django, `data/openedx_inventory.csv` y `data/openedx_models.json`.
@@ -88,6 +104,22 @@ Lebrely is [Privai](https://privai.cl)'s automated data classifier. This reposit
 **The Lebrely classifier (`app/` in the private Privai repo) is not included.** It is a separate commercial product. The scripts that orchestrate the classification (`usage_analysis_agent.py`, `ablation.py`) contain `from app. ...` imports that do not resolve outside the Privai environment. They are published for methodological transparency — the orchestration logic and the ablation transformations can be inspected, but the classification cannot be re-executed.
 
 The analysis scripts (`compare_and_evaluate.py`, `ablation_report.py`, `stratify_and_sample.py`, `extract_models.py`) DO run without Lebrely and can reproduce all tables and figures in the abstract from the stored predictions.
+
+## Setup
+
+Requires Python 3.10+. Install dependencies:
+
+```
+pip install -r requirements.txt
+```
+
+`extract_models.py` additionally requires a local checkout of Open edX (`edx-platform`) and the environment variable `OPENEDX_REPO` pointing to it:
+
+```
+export OPENEDX_REPO=/path/to/edx-platform
+```
+
+The other three analysis scripts do not require `OPENEDX_REPO`: they read the artefacts already stored under `data/` and `classification/`, and regenerate the reports and figures under `reports/`.
 
 ## Classifier verification (summary)
 

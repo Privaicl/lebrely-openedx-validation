@@ -1,0 +1,4 @@
+matplotlib
+numpy
+tree-sitter
+tree-sitter-python

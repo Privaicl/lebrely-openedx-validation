@@ -23,8 +23,8 @@ Output (under `reports/`):
   - validation_confusion_matrix_<scenario>.png
 
 Usage:
-  python scripts/openedx/compare_and_evaluate.py
-  python scripts/openedx/compare_and_evaluate.py --predictions openedx_predictions_c1_t0.json
+  python scripts/compare_and_evaluate.py
+  python scripts/compare_and_evaluate.py --predictions openedx_predictions_c1_t0.json
 """
 
 from __future__ import annotations

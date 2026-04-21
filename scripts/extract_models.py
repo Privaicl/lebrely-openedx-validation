@@ -5,10 +5,13 @@ Walks the openedx-platform repo, detects Django classes (classes with at
 least one field of the form `xxx = (models.)?XxxField(...)`) and
 produces:
 
-- openedx_inventory.csv: one row per model (table_name, django_app,
+- data/openedx_inventory.csv: one row per model (table_name, django_app,
   model_class, n_fields, source_file, source_lines).
-- openedx_models.json: full class code + metadata, keyed by
+- data/openedx_models.json: full class code + metadata, keyed by
   "{app}.{class_name}". This is the input to the classifier.
+
+Requires the OPENEDX_REPO environment variable to point to a local
+checkout of edx-platform.
 """
 
 from __future__ import annotations
@@ -23,8 +26,8 @@ from tree_sitter import Language, Node, Parser
 from tree_sitter_python import language as python_language
 
 
-OPENEDX_ROOT = Path(os.environ.get("OPENEDX_REPO", "./openedx-platform"))
-OUTPUT_DIR = Path(__file__).parent
+REPO_ROOT = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = REPO_ROOT / "data"
 
 
 FIELD_TYPE_SQL: dict[str, str] = {
@@ -207,18 +210,39 @@ def extract_classes(file_path: Path, parser: Parser) -> list[dict]:
 
 
 def main() -> None:
+    openedx_repo = os.environ.get("OPENEDX_REPO")
+    if not openedx_repo:
+        print(
+            "error: OPENEDX_REPO environment variable is not set.\n"
+            "       Point it to a local checkout of edx-platform, e.g.:\n"
+            "           export OPENEDX_REPO=/path/to/edx-platform",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    openedx_root = Path(openedx_repo).expanduser().resolve()
+    if not openedx_root.is_dir():
+        print(f"error: OPENEDX_REPO does not point to a directory: {openedx_root}", file=sys.stderr)
+        sys.exit(1)
+
     parser = Parser(Language(python_language()))
 
-    model_files = find_model_files(OPENEDX_ROOT)
-    print(f"Scanning {len(model_files)} candidate model files under {OPENEDX_ROOT}")
+    model_files = find_model_files(openedx_root)
+    print(f"Scanning {len(model_files)} candidate model files under {openedx_root}")
+    if not model_files:
+        print(
+            f"error: no Django model files found under {openedx_root}.\n"
+            "       Expected a checkout of edx-platform with models.py under djangoapps/.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     inventory_rows: list[dict] = []
     models_out: dict[str, dict] = {}
 
     for f in model_files:
-        app = derive_django_app(f, OPENEDX_ROOT)
-        scope = derive_django_app_scope(f, OPENEDX_ROOT)
-        rel_source = str(f.relative_to(OPENEDX_ROOT))
+        app = derive_django_app(f, openedx_root)
+        scope = derive_django_app_scope(f, openedx_root)
+        rel_source = str(f.relative_to(openedx_root))
         for cls in extract_classes(f, parser):
             key = f"{scope}.{app}.{cls['class_name']}"
             if key in models_out:
