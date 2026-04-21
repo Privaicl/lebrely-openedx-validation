@@ -1,0 +1,817 @@
+{
+  "LTIPIISignature": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "lti_tools",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "lti_tools_hash",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "agreements",
+    "source_file": "openedx/core/djangoapps/agreements/models.py"
+  },
+  "UserRetirementPartnerReportingStatus": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "original_username",
+        "category": "user.account.username",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "original_email",
+        "category": "user.contact.email",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "original_name",
+        "category": "user.name",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "is_being_processed",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "user_api",
+    "source_file": "openedx/core/djangoapps/user_api/models.py"
+  },
+  "CourseEnrollmentAttribute": {
+    "fields": [
+      {
+        "name": "enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "namespace",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "value",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/course_enrollment.py"
+  },
+  "CourseEnrollment": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "is_active",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "mode",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/course_enrollment.py"
+  },
+  "EntranceExamConfiguration": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "skip_entrance_exam",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/user.py"
+  },
+  "CourseAccessRoleHistory": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "org",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "role",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "action_type",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "changed_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "old_values",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/user.py"
+  },
+  "CertificateGenerationHistory": {
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "generated_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "instructor_task",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "is_regeneration",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "certificates",
+    "source_file": "lms/djangoapps/certificates/models.py"
+  },
+  "UserActivity": {
+    "fields": [
+      {
+        "name": "id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "date",
+        "category": "user.behavior",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "course_goals",
+    "source_file": "lms/djangoapps/course_goals/models.py"
+  },
+  "OfflineComputedGrade": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "gradeset",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "courseware",
+    "source_file": "lms/djangoapps/courseware/models.py"
+  },
+  "CertificateInvalidation": {
+    "fields": [
+      {
+        "name": "generated_certificate",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "invalidated_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "notes",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "active",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "certificates",
+    "source_file": "lms/djangoapps/certificates/models.py"
+  },
+  "ProgramCourseEnrollment": {
+    "fields": [
+      {
+        "name": "program_enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "course_enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "status",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "program_enrollments",
+    "source_file": "lms/djangoapps/program_enrollments/models.py"
+  },
+  "CourseEmail": {
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "to_option",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "targets",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "template_name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "from_addr",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "bulk_email",
+    "source_file": "lms/djangoapps/bulk_email/models.py"
+  },
+  "DiscussionTopicLink": {
+    "fields": [
+      {
+        "name": "context_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "usage_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "title",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "group",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "provider_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "external_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "enabled_in_context",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "ordering",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "context",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "discussions",
+    "source_file": "openedx/core/djangoapps/discussions/models.py"
+  },
+  "CourseTeamMembership": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "team",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "date_joined",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "last_activity_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "teams",
+    "source_file": "lms/djangoapps/teams/models.py"
+  },
+  "CourseDiscussionSettings": {
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "discussions_id_map",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "always_divide_inline_discussions",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "reported_content_email_notifications",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "_divided_discussions",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "division_scheme",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "django_comment_common",
+    "source_file": "openedx/core/djangoapps/django_comment_common/models.py"
+  },
+  "Bookmark": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "course_key",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "usage_key",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "_path",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "xblock_cache",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "bookmarks",
+    "source_file": "openedx/core/djangoapps/bookmarks/models.py"
+  },
+  "IDVerificationAttempt": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "name",
+        "category": "user.name",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "created_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "updated_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "expiration_date",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py"
+  },
+  "PhotoVerification": {
+    "fields": [
+      {
+        "name": "face_image_url",
+        "category": "user.biometric",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "photo_id_image_url",
+        "category": "user.biometric",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "receipt_id",
+        "category": "user.unique_id.pseudonymous",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "display",
+        "category": "user.account.settings",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "submitted_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "reviewing_user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "reviewing_service",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "error_msg",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "error_code",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py"
+  },
+  "VerificationAttempt": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "name",
+        "category": "user.name",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "expiration_datetime",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "hide_status_from_user",
+        "category": "user.account.settings",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "created_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "updated_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py"
+  },
+  "UserAgreement": {
+    "fields": [
+      {
+        "name": "type",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "summary",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "text",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "url",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "agreements",
+    "source_file": "openedx/core/djangoapps/agreements/models.py"
+  },
+  "Catalog": {
+    "fields": [
+      {
+        "name": "id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "query",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "viewers",
+        "category": "user.account.username",
+        "data_subject": "USUARIO"
+      }
+    ],
+    "django_app": "api_admin",
+    "source_file": "openedx/core/djangoapps/api_admin/models.py"
+  },
+  "CommerceConfiguration": {
+    "fields": [
+      {
+        "name": "checkout_on_ecommerce_service",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "basket_checkout_page",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "cache_ttl",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "receipt_page",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "enable_automatic_refund_approval",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "commerce",
+    "source_file": "lms/djangoapps/commerce/models.py"
+  },
+  "ApiAccessRequest": {
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "status",
+        "category": "user.authorization",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "website",
+        "category": "user.contact.url",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "reason",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "company_name",
+        "category": "user.workplace",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "company_address",
+        "category": "user.workplace",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "site",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "contacted",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "api_admin",
+    "source_file": "openedx/core/djangoapps/api_admin/models.py"
+  },
+  "WaffleFlagCourseOverrideModel": {
+    "fields": [
+      {
+        "name": "waffle_flag",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "override_choice",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "note",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "waffle_utils",
+    "source_file": "openedx/core/djangoapps/waffle_utils/models.py"
+  },
+  "StagedContentFile": {
+    "fields": [
+      {
+        "name": "for_content",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "filename",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "data_file",
+        "category": "user.content.private",
+        "data_subject": "USUARIO"
+      },
+      {
+        "name": "source_key_str",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      },
+      {
+        "name": "md5_hash",
+        "category": "system.operations",
+        "data_subject": "SYSTEM"
+      }
+    ],
+    "django_app": "content_staging",
+    "source_file": "openedx/core/djangoapps/content_staging/models.py"
+  }
+}

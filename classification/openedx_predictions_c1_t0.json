@@ -1,0 +1,1054 @@
+{
+  "run_data": {
+    "time_total": "21 min 32 seconds",
+    "fields_classified": 133
+  },
+  "UserRetirementPartnerReportingStatus": {
+    "table_semantic_summary": "UserRetirementPartnerReportingStatus is a history/audit table that maintains a queue of users who have been retired from the LMS and require notification to external partners for data deletion compliance. It stores denormalized snapshots of the user's identity (username, email, name) at the time of retirement, along with a processing flag to prevent duplicate partner reporting. This table bridges the LMS retirement process with asynchronous third-party data deletion workflows.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "OneToOneField to auth_user (a PERSON-LIKE entity per the entity reference list). Per FK DECISION TREE Rule 1: direct reference to a person-like entity → user.unique_id. Data subject is USUARIO."
+      },
+      {
+        "name": "original_username",
+        "category": "user.account.username",
+        "data_subject": "USUARIO",
+        "reasoning": "Denormalized snapshot of the user's username at retirement time. Per DOMAIN RULES Rule 3 (IDENTITY/CONTACT): username → user.account.username. Although this is a denormalized field in a history/audit table (per HISTORY/AUDIT TABLE RULE), it is classified by its content semantics: it represents the user's account identifier. Data subject is USUARIO."
+      },
+      {
+        "name": "original_email",
+        "category": "user.contact.email",
+        "data_subject": "USUARIO",
+        "reasoning": "Denormalized snapshot of the user's email address at retirement time. Per DOMAIN RULES Rule 3 (IDENTITY/CONTACT): email on a user-related table → user.contact.email. Although this is a denormalized field in a history/audit table (per HISTORY/AUDIT TABLE RULE), it is classified by its content semantics: it represents the user's contact email. Data subject is USUARIO."
+      },
+      {
+        "name": "original_name",
+        "category": "user.name",
+        "data_subject": "USUARIO",
+        "reasoning": "Denormalized snapshot of the user's full name at retirement time. Per DOMAIN RULES Rule 3 (IDENTITY/CONTACT): full_name → user.name. Although this is a denormalized field in a history/audit table (per HISTORY/AUDIT TABLE RULE), it is classified by its content semantics: it represents the user's name. Data subject is USUARIO."
+      },
+      {
+        "name": "is_being_processed",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Boolean flag indicating whether this retirement record is currently being processed by the partner reporting pipeline. Per DOMAIN RULES Rule 10 (BOOLEANS/FLAGS): this is a processing state flag that controls workflow logic, not a user preference or authorization setting. It is a system-level operational flag that tracks the lifecycle state of the queue entry. Data subject is SYSTEM."
+      }
+    ],
+    "django_app": "user_api",
+    "source_file": "openedx/core/djangoapps/user_api/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseEnrollmentAttribute": {
+    "table_semantic_summary": "CourseEnrollmentAttribute is a flexible key-value extension table that stores arbitrary metadata about a user's course enrollment. It uses a denormalized three-field structure (namespace, name, value) to capture enrollment-related attributes such as credit provider IDs and order information. The table enables the platform to extend enrollment records with domain-specific data without schema changes, supporting use cases like credit course management and payment tracking.",
+    "fields": [
+      {
+        "name": "enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a ForeignKey to CourseEnrollment, which represents a per-user learning instance (a specific enrollment record). Per the FK DECISION TREE, a FK to a per-user learning instance (not the user's identity itself) is classified as system.operations. The enrollment record is a platform entity that tracks the relationship between a user and a course, not a direct identifier of the user."
+      },
+      {
+        "name": "namespace",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a CharField that categorizes the type of attribute (e.g., 'credit', 'order'). It is a metadata label used to organize and group related attributes within the enrollment extension system. It is platform-level operational metadata, not personal data about the user."
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a CharField that specifies the attribute name within a namespace (e.g., 'provider_id', 'date_placed', 'order_number'). It is a key identifier in the key-value pair structure used for platform operations and enrollment management. The name itself is a schema/catalog element, not personal data."
+      },
+      {
+        "name": "value",
+        "category": "user.payment",
+        "data_subject": "USUARIO",
+        "reasoning": "This CharField stores the actual attribute value. The content classification depends on the namespace and name pair. When namespace='order' and name='order_number' or 'date_placed', the value contains payment/order information (e.g., '12345', '2024-01-15'), which is user.payment data. When namespace='credit' and name='provider_id', the value identifies the credit provider (e.g., 'hogwarts'), which is also payment-related (credit purchase metadata). The dominant use case in the codebase is storing order and credit payment information, making user.payment the primary classification."
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/course_enrollment.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseEnrollment": {
+    "table_semantic_summary": "CourseEnrollment is a core enrollment record that links a user to a course with a specific enrollment mode and active status. It tracks the user's enrollment lifecycle (creation date, activation/deactivation) and enrollment tier (audit, verified, professional, etc.). This table is central to access control, certification eligibility, refund processing, and personalized learning experiences across the Open edX platform.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey directly to auth_user (a PERSON-LIKE entity per the entity reference list). Per FK Decision Tree Step 1: target is a person-like entity → user.unique_id. This FK identifies which user owns the enrollment record."
+      },
+      {
+        "name": "course",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "ForeignKey to CourseOverview, which is a LOOKUP/CATALOG table (course metadata and reference data). Per FK Decision Tree Step 2: target is a lookup/catalog table → system.operations. The course_id is a platform reference to a course in the catalog, not person-like data. NO FK transitivity: CourseOverview may contain enrollment records internally, but that does not change the classification of the FK itself."
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField (auto_now_add=True) recording when the enrollment record was created. Per Rule 9 (Timestamps): DEFAULT classification is system.operations. This timestamp captures the lifecycle event (enrollment creation) in the database, not engagement/profiling tracking. It is used for refund window calculations and audit purposes, but these are operational/administrative uses, not explicit engagement profiling."
+      },
+      {
+        "name": "is_active",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "BooleanField (default=True) that gates the user's access to the course. When False, the user loses all course access. Per Rule 10 (Booleans/Flags): this is a per-user permission/access flag that determines scope of access to the system. It is not a privacy preference (user.privacy_preferences) or account setting (user.account.settings), but rather an authorization state that controls what the user can do in the course."
+      },
+      {
+        "name": "mode",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CharField storing the enrollment mode (audit, verified, professional, honor, credit, etc.). This field references a CourseMode choice/enumeration, which is a LOOKUP/CATALOG table per the entity reference list. The mode is a platform-level classification of the enrollment tier, not personal data about the user. Although mode influences access control and certification eligibility, the field itself is a reference to a system-defined enrollment type, not user-generated or user-specific data."
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/course_enrollment.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "EntranceExamConfiguration": {
+    "table_semantic_summary": "EntranceExamConfiguration stores per-user, per-course entrance exam permissions. It records whether a student is allowed to skip the entrance exam requirement for a specific course, along with audit timestamps. This is a user-authorization configuration table that gates access to course content based on exam completion status.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to auth_user (a PERSON-LIKE entity per the reference list). Directly identifies the student whose exam permission is being configured. Per FK Decision Tree Step 1: target is a person-like entity → user.unique_id."
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField referencing a course identifier (a LOOKUP/CATALOG table per the reference list). Per FK Decision Tree Step 2: target is a course catalog entity, not a person-like entity → system.operations. The course_id is a platform reference, not user data, regardless of the fact that courses contain user enrollments."
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField recording when the configuration record was created. Per Rule 9 (Timestamps): default classification for all lifecycle/audit timestamps is system.operations. This field does not capture engagement tracking or profiling data—it is merely a record of when the database row was created."
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField recording when the configuration record was last modified. Per Rule 9 (Timestamps): default classification for all lifecycle/audit timestamps is system.operations. This is a record-level audit timestamp, not engagement or profiling data."
+      },
+      {
+        "name": "skip_entrance_exam",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "BooleanField indicating whether the user is permitted to bypass the entrance exam requirement. Per Rule 10 (Booleans/Flags): permission flags on a per-user basis are classified as user.authorization. This field directly encodes the user's scope of access/permissions within the course (whether they are authorized to skip the exam)."
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/user.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseAccessRoleHistory": {
+    "table_semantic_summary": "CourseAccessRoleHistory is an audit/history table that records all changes (create, update, delete) to CourseAccessRole assignments. It captures WHO made the change (changed_by), WHAT role was assigned (role, org, course_id), WHEN it happened (created timestamp), and for updates, WHAT the previous values were (old_values). This enables compliance auditing, change tracking, and reverting of role assignments.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to auth_user (PERSON-LIKE entity per ENTITY REFERENCE LISTS). This field identifies the user whose course access role was changed. Per FK DECISION TREE step 1, a FK to a person-like entity → user.unique_id. Data subject is USUARIO."
+      },
+      {
+        "name": "org",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CharField storing organization identifier (e.g., 'edX', 'MIT'). This is a denormalized copy of the organization from CourseAccessRole, representing a platform-level organizational entity, not user data. It is a reference to a lookup/catalog entity (organization codes are platform configuration). → system.operations."
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField storing course identifier (e.g., 'course-v1:edX+CS101+2024'). This is a denormalized copy from CourseAccessRole, referencing a course in the platform catalog. Per FK DECISION TREE and COMMON MISTAKES rule: course_id is a platform reference to a course, not user data. → system.operations."
+      },
+      {
+        "name": "role",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "CharField storing the role name (e.g., 'instructor', 'staff', 'beta_tester'). This field captures the scope of permissions and access granted to the user in a course or organization. Per DOMAIN RULES Rule 10 (BOOLEANS/FLAGS) and authorization semantics, role assignments define user authorization scope. → user.authorization."
+      },
+      {
+        "name": "action_type",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CharField with choices ('created', 'updated', 'deleted') indicating the type of change recorded in this history entry. This is audit/lifecycle metadata describing what operation occurred on the CourseAccessRole record, not user data. It is a record-level audit flag. → system.operations."
+      },
+      {
+        "name": "changed_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to auth_user (PERSON-LIKE entity), nullable, identifying who made the change. Per FK DECISION TREE step 1, a FK to a person-like entity → user.unique_id. This captures the identity of the admin/staff member who performed the role change. Data subject is USUARIO (the person who made the change, not the user whose role was changed)."
+      },
+      {
+        "name": "old_values",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "JSONField storing a snapshot of previous field values for 'updated' actions (e.g., {'user_id': 42, 'org': 'edX', 'course_id': '...', 'role': 'staff'}). This is a history/audit table snapshot. The old_values field contains a snapshot of the user's previous authorization scope (role, org, course_id). Per HISTORY/AUDIT TABLE RULE, snapshot fields are classified by WHAT they contain: the 'role' field within old_values represents the user's previous authorization. → user.authorization."
+      }
+    ],
+    "django_app": "student",
+    "source_file": "common/djangoapps/student/models/user.py",
+    "n_fields": 7,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CertificateGenerationHistory": {
+    "table_semantic_summary": "CertificateGenerationHistory is an audit/history table that records when and how certificates are generated or regenerated for a course. It tracks which instructor initiated the task, links to the background job that performed the generation, and captures whether it was an initial generation or a regeneration. The table serves as a compliance and operational audit trail for certificate issuance activities.",
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "course_id is a ForeignKey to CourseOverview (a course catalog/lookup table). Per the FK DECISION TREE, lookup/catalog tables are classified as system.operations. The course identifier is a platform-level reference to a course run, not person-like data. DO NOT follow the transitive chain that CourseOverview contains enrollment records with users."
+      },
+      {
+        "name": "generated_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "generated_by is a ForeignKey to auth_user (Django's User model), which is a PERSON-LIKE entity per the ENTITY REFERENCE LISTS. Per FK DECISION TREE Rule 1: FK directly to a person-like entity → user.unique_id. This field identifies which instructor or admin initiated the certificate generation task."
+      },
+      {
+        "name": "instructor_task",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "instructor_task is a ForeignKey to InstructorTask, which is a background job/task record table (a CONFIGURATION/EXTENSION table per ENTITY REFERENCE LISTS). Per FK DECISION TREE Rule 2: FK to a lookup/catalog or configuration table → system.operations. The InstructorTask itself is not a person-like entity; it is a platform operation record that happens to contain task metadata (task_input JSON) used for certificate generation."
+      },
+      {
+        "name": "is_regeneration",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "is_regeneration is a BooleanField that flags whether the certificate generation was a regeneration (True) or initial generation (False). Per the BOOLEANS/FLAGS rule, this is an operational flag that distinguishes the type of task executed. It is not a user preference, authorization, or account setting—it is a record-level operational attribute of the audit entry itself."
+      }
+    ],
+    "django_app": "certificates",
+    "source_file": "lms/djangoapps/certificates/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "UserActivity": {
+    "table_semantic_summary": "UserActivity is an engagement tracking table that records one activity per user per course per day to measure learner participation against weekly learning goals. It is append-only and explicitly designed for profiling user engagement with courses.",
+    "fields": [
+      {
+        "name": "id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Auto-generated primary key for a non-person-like table (engagement tracking record, not a user identity row). Per ID Rule Question 2: PK for a non-person-like table (activity/engagement record) → system.operations."
+      },
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "Foreign key directly referencing auth_user (a PERSON-LIKE entity per the reference list). Per FK Decision Tree Rule 1: target is a person-like entity → user.unique_id, data_subject = USUARIO."
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Foreign key to CourseOverview (a LOOKUP/CATALOG table per the reference list). Per FK Decision Tree Rule 2: target is a lookup/catalog table → system.operations, data_subject = SYSTEM. Do NOT follow FK transitivity to user enrollments."
+      },
+      {
+        "name": "date",
+        "category": "user.behavior",
+        "data_subject": "USUARIO",
+        "reasoning": "Date field in a table whose explicit purpose is engagement tracking for course goals (append-only, one row per user/course/day). Per Rule 8 (Tracking/Activity): the table's literal purpose is engagement tracking for profiling learner goal achievement. Per Rule 9 (Timestamps): this timestamp feeds aggregated engagement metrics (weekly activity count for goal reminders). Promotion to user.behavior is justified by PRIMARY PRINCIPLE: the system uses this data to measure and profile user engagement with courses."
+      }
+    ],
+    "django_app": "course_goals",
+    "source_file": "lms/djangoapps/course_goals/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "OfflineComputedGrade": {
+    "table_semantic_summary": "OfflineComputedGrade is a legacy table that stores pre-computed course grades for users, capturing the complete grade breakdown (section scores, raw scores, weighted grades) as a JSON blob. Each record represents a snapshot of a user's computed grades for a specific course, with lifecycle timestamps. The table is deprecated (offline grade computation was removed in 2016) but retained for backward compatibility and historical data access.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey directly to auth_user (PERSON-LIKE entity per the reference list). Per FK Decision Tree Step 1: target is a PERSON-LIKE entity → user.unique_id, data_subject = USUARIO."
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField referencing a course identifier (a LOOKUP/CATALOG table per the reference list). Per FK Decision Tree Step 2: target is a LOOKUP/CATALOG table → system.operations, data_subject = SYSTEM. DO NOT follow FK chains; course_id is a platform reference to course metadata, not user data."
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField recording when the grade record was first created. Per Rule 9 (Timestamps): DEFAULT classification is system.operations. This is a lifecycle/audit timestamp (auto_now_add=True), not a field captured explicitly for engagement tracking or profiling. No exception applies."
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField recording when the grade record was last modified. Per Rule 9 (Timestamps): DEFAULT classification is system.operations. This is a lifecycle/audit timestamp (auto_now=True), not a field captured for engagement tracking or profiling. No exception applies."
+      },
+      {
+        "name": "gradeset",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "TextField storing JSON-serialized grade data (section scores, raw scores, weighted grades, grade breakdown). Per Rule 4 (Academic Performance / Outcomes): grades and academic outcomes are NOT user.behavior — they are data ABOUT the user's performance, not actions captured for engagement profiling. Per the PRIMARY PRINCIPLE, outcomes describe performance, not engagement tracking. Grades are user-generated/earned content (the result of the user's work in the course) and are private to the user. Default → user.content.private."
+      }
+    ],
+    "django_app": "courseware",
+    "source_file": "lms/djangoapps/courseware/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CertificateInvalidation": {
+    "table_semantic_summary": "CertificateInvalidation is an audit and control table that records when and why student certificates have been revoked or invalidated. It maintains a soft-delete audit trail (via the `active` flag) of certificate invalidations, tracking which instructor/support staff member invalidated each certificate and when, with optional notes explaining the reason. This table prevents certificate generation for invalidated students and provides compliance/accountability records.",
+    "fields": [
+      {
+        "name": "generated_certificate",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a ForeignKey to GeneratedCertificate, which represents a per-user learning instance (a specific certificate issued to a user in a course). Per the FK DECISION TREE, a FK to a per-user learning instance (not a person-like entity like auth_user) → system.operations. The FK is a pointer to an enrollment/certificate row, not the user's identity itself."
+      },
+      {
+        "name": "invalidated_by",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "This is a ForeignKey to auth_user (Django User model), which is explicitly listed in PERSON-LIKE ENTITIES. Per FK DECISION TREE Rule 1: FK directly to a PERSON-LIKE entity (auth_user) → user.unique_id. This field identifies which instructor or support staff member performed the invalidation action."
+      },
+      {
+        "name": "notes",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "This is a free-text TextField containing optional contextual information about why the certificate was invalidated (e.g., 'Failed proctored exam', 'Academic integrity violation'). Per Rule 6 (USER-GENERATED OR USER-SELECTED CONTENT), free-text justifications and notes are classified as user.content.private. Although authored by staff, this note is directed at and concerns the user's certificate status and is stored as part of the user's record."
+      },
+      {
+        "name": "active",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a BooleanField that implements a soft-delete pattern for the invalidation record (True = invalidation is active/in effect; False = invalidation has been deactivated). Per Rule 10 (BOOLEANS/FLAGS), feature flags and control flags on non-user rows default to system.operations. This flag controls the lifecycle and audit state of the invalidation record itself, not a user preference or authorization setting."
+      }
+    ],
+    "django_app": "certificates",
+    "source_file": "lms/djangoapps/certificates/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "ProgramCourseEnrollment": {
+    "table_semantic_summary": "ProgramCourseEnrollment represents a learner's enrollment in a specific course within the context of a program. It bridges program-level enrollment (via program_enrollment FK) with course-level enrollment (via optional course_enrollment FK), tracking the enrollment status ('active' or 'inactive') and denormalizing the course identifier for efficient querying. This table supports a dual-state model: 'waiting' enrollments (no course_enrollment, external user not yet linked to LMS) and 'realized' enrollments (linked to an LMS CourseEnrollment). The status field controls course access and syncs with the underlying CourseEnrollment when present.",
+    "fields": [
+      {
+        "name": "program_enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Foreign key to ProgramEnrollment, which is a per-user learning instance (enrollment record). Per the FK decision tree, a FK to a per-user learning instance (not a person-like entity like auth_user) → system.operations. The FK points to an enrollment row, not the user's identity directly. The user identity is accessed transitively through program_enrollment.user, but per the CRITICAL RULE (NO FK TRANSITIVITY), we classify based only on what this FK directly references: an enrollment record."
+      },
+      {
+        "name": "course_enrollment",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Foreign key to CourseEnrollment (nullable), which is a per-user learning instance representing a specific enrollment in a course. Per the FK decision tree, a FK to a per-user learning instance (not a person-like entity) → system.operations. The FK is a pointer to an enrollment row, not the user's identity. The fact that CourseEnrollment internally references auth_user does not change this classification (NO FK TRANSITIVITY)."
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField storing a course run identifier (e.g., 'course-v1:edX+DemoX+Demo_Course'). This is a denormalized reference to a course catalog entry (CourseOverview). Per the LOOKUP/CATALOG TABLES rule, course catalog data is system.operations. The course_key is a platform-level reference to a course offering, not user-specific data. It enables efficient filtering without joining to CourseEnrollment, but semantically it remains a reference to system catalog data."
+      },
+      {
+        "name": "status",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CharField with choices ('active' or 'inactive') representing the enrollment state in the course. This is a lifecycle/state field on an enrollment record, not a user preference or engagement metric. Per the TIMESTAMPS/BOOLEANS/FLAGS rule and PRIMARY PRINCIPLE, status is a record-level state indicator (not captured for profiling or engagement tracking). It controls access but is fundamentally a system-managed enrollment state, not user-generated or user-selected content."
+      }
+    ],
+    "django_app": "program_enrollments",
+    "source_file": "lms/djangoapps/program_enrollments/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseEmail": {
+    "table_semantic_summary": "CourseEmail is a system table that stores bulk email campaigns sent to course participants. It records the email content (subject, HTML/text body), metadata about the email (sender, template, custom from address), and a many-to-many relationship to Target records that define recipient groups (staff, students, cohorts, enrollment modes). The table is used by the bulk email subsystem to create, update, and dispatch emails to filtered recipient lists via asynchronous Celery tasks. It is NOT a user data table—it is a system operations table that manages email distribution campaigns.",
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "course_id is a CourseKeyField that directly references the course catalog (CourseOverview or course metadata). Per the FK decision tree, a foreign key to a LOOKUP/CATALOG table (course catalog) is classified as system.operations. The course_id is used to identify which course the email campaign belongs to and to filter recipients by course enrollment, but it does not represent user identity or user data—it is a platform-level reference to a course entity."
+      },
+      {
+        "name": "to_option",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "to_option is a deprecated CharField that stores a single choice value ('deprecated'). It is a legacy field retained for database migration compatibility and is no longer used in the application logic. It represents a configuration choice for the email campaign, not user data. Classified as system.operations because it is platform-level metadata about how the email was configured."
+      },
+      {
+        "name": "targets",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "targets is a ManyToManyField to the Target model, which stores recipient group definitions (SEND_TO_STAFF, SEND_TO_COHORT, track:audit, mode:verified, etc.). The Target records themselves are lookup/catalog entries that define recipient filtering rules—they are not user data but rather system-level configuration for email distribution. The M2M relationship is a pointer to these configuration records, not to individual users. Per the FK decision tree, references to LOOKUP/CATALOG tables are system.operations."
+      },
+      {
+        "name": "template_name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "template_name is a CharField that stores the name of a CourseEmailTemplate to use for rendering the email. It is a reference to a template catalog entry (e.g., 'branded_template', 'gnarly_template'). The template is a system-level configuration asset used to format email content, not user data. Per the LOOKUP/CATALOG rule, references to template catalogs are system.operations."
+      },
+      {
+        "name": "from_addr",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "from_addr is a CharField that stores a custom email sender address (e.g., 'branded@branding.com'). It is a configuration value for the email campaign—a system-level setting that determines the 'From' header of the email. It is not user contact data (user.contact.email applies to user-owned email addresses like a learner's inbox); rather, it is a system-controlled sender address used for bulk email distribution. Classified as system.operations because it is platform configuration metadata, not user data."
+      }
+    ],
+    "django_app": "bulk_email",
+    "source_file": "lms/djangoapps/bulk_email/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "DiscussionTopicLink": {
+    "table_semantic_summary": "DiscussionTopicLink is a platform configuration table that maps discussion topics from external forum providers to specific locations within a course (course-level or unit-level). It stores the linkage between discussion IDs managed by external providers and course structure elements, enabling the platform to display discussions in-context within course units. This is a system-level catalog/configuration table, not a user data table.",
+    "fields": [
+      {
+        "name": "context_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores a LearningContextKeyField that identifies the course/learning context. It is a platform-level reference to a course catalog entity (CourseOverview), not a person-like entity. Per the FK decision tree and LOOKUP/CATALOG rule, course identifiers are system.operations. The field is indexed and used to filter topics by course, making it operational metadata for the platform."
+      },
+      {
+        "name": "usage_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores a UsageKeyField that identifies a specific xblock/unit within the course structure (or null for course-level topics). It is a platform-level reference to course content structure, not user data. Per the LOOKUP/CATALOG rule, course structure identifiers are system.operations. The field is indexed and used to locate which unit a discussion is embedded in."
+      },
+      {
+        "name": "title",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores the human-readable name of the discussion topic (e.g., 'Unit 1 Discussion', 'General Course Discussion'). It is descriptive metadata about a course content element, not user-generated content or user data. The title is derived from course structure (unit display_name) or course-level topic configuration. It is platform-managed catalog text, not user.content."
+      },
+      {
+        "name": "group",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field is a ForeignKey to CourseUserGroup (nullable). Per the FK decision tree, CourseUserGroup is a LOOKUP/CATALOG table (a reference to cohort/group definitions), not a PERSON-LIKE entity. The FK directly references a group catalog row, not a user. Therefore, group → system.operations. The field indicates which cohort a discussion is divided for, but the FK itself points to a group definition, not user identity."
+      },
+      {
+        "name": "provider_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores a string identifier for the discussion provider (e.g., 'openedx', 'ed-discuss', 'piazza'). It is a platform-level configuration value that identifies which external forum backend manages this topic. This is operational metadata for routing discussions to the correct provider system, not user data."
+      },
+      {
+        "name": "external_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores the discussion topic ID as assigned by the external forum provider (e.g., commentable_id in cs_comments_service, or a UUID). It is a platform-level identifier used to reference the discussion in the external system. Although it identifies a discussion resource, it is not a user identifier, user content, or user data—it is a system-to-system reference identifier for operational routing and data synchronization."
+      },
+      {
+        "name": "enabled_in_context",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This boolean field indicates whether the discussion topic should be displayed in the course UI. It is a platform-level configuration flag that controls the visibility state of a course content element. Per the Booleans/Flags rule, feature flags and configuration booleans on non-user rows are system.operations. This is not a user preference or user authorization—it is a course-level content visibility setting."
+      },
+      {
+        "name": "ordering",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This PositiveIntegerField stores the display order of the discussion topic within the course. It is operational metadata used to sort and present course content elements. Per the timestamps/ordering rule, record-level ordering and sequencing fields are system.operations. This is not user behavior tracking or user data—it is platform-level content organization."
+      },
+      {
+        "name": "context",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This JSONField stores denormalized course structure metadata (section, subsection, unit display names) for reference when course elements are deleted. It is a snapshot of course catalog structure, not user data. The field preserves operational context about the course hierarchy to support audit trails and historical record-keeping. It is system-level configuration and operational metadata, not user content or user data."
+      }
+    ],
+    "django_app": "discussions",
+    "source_file": "openedx/core/djangoapps/discussions/models.py",
+    "n_fields": 9,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseTeamMembership": {
+    "table_semantic_summary": "CourseTeamMembership is a join table that records the membership relationship between users and course teams. It tracks when a user joins a team (date_joined) and their most recent activity within that team's discussion context (last_activity_at). The table enforces a one-user-per-team constraint and maintains denormalized activity timestamps for engagement tracking and team member visibility.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey directly to auth_user (a PERSON-LIKE entity per the entity reference list). Per FK Decision Tree Step 1: target is a person-like entity → user.unique_id. This field identifies which user is a member of the team."
+      },
+      {
+        "name": "team",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "ForeignKey to CourseTeam, which is a LOOKUP/CATALOG table representing a course-level organizational unit (not a person-like entity). Per FK Decision Tree Step 2: target is a lookup/catalog table → system.operations. The team reference is a pointer to a platform-level team entity, not user identity data."
+      },
+      {
+        "name": "date_joined",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Timestamp field recording when the membership record was created (auto_now_add=True). Per Rule 9 (Timestamps): default classification is system.operations. This is a lifecycle/audit timestamp marking the creation of the membership row, not a field captured explicitly for engagement profiling or user behavior tracking. It is immutable and serves as a record of when the relationship was established."
+      },
+      {
+        "name": "last_activity_at",
+        "category": "user.behavior",
+        "data_subject": "USUARIO",
+        "reasoning": "Timestamp field that tracks the user's most recent activity within their team's discussion context. Per Rule 8 (Tracking/Activity): this field is explicitly designed for engagement tracking — it is updated whenever the user creates posts, votes, edits comments, or endorses content in team discussions (via signal handlers in models.py lines 45–99). The field's semantic purpose is to measure and profile user engagement within the team. This satisfies the PRIMARY PRINCIPLE: the system uses this data to track how active/engaged the user is with their team's collaborative activities."
+      }
+    ],
+    "django_app": "teams",
+    "source_file": "lms/djangoapps/teams/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CourseDiscussionSettings": {
+    "table_semantic_summary": "CourseDiscussionSettings stores platform-level configuration for course discussion features, including division schemes (cohort/enrollment track), discussion topic mappings, and notification preferences. This is a system configuration table that controls how discussions are organized and moderated across a course, not a table that stores user-generated content or personal data.",
+    "fields": [
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "course_id is a CourseKeyField that references the course catalog (CourseOverview is a LOOKUP/CATALOG table per the entity reference list). Per the FK DECISION TREE, a FK to a non-person-like lookup/catalog table → system.operations. This is a platform reference to identify which course these settings apply to, not user data."
+      },
+      {
+        "name": "discussions_id_map",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "discussions_id_map is a JSONField containing a denormalized cache mapping discussion IDs to XBlock usage keys. This is internal platform infrastructure data used for performance optimization (avoiding modulestore queries). It contains no user-related information—only course structure metadata. Per the DOMAIN RULES, cache/track/modulestore infrastructure → system.operations."
+      },
+      {
+        "name": "always_divide_inline_discussions",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a boolean configuration flag that controls the default behavior for dividing inline discussions in a course. It is a course-level setting that affects how the platform organizes discussion visibility, not a user preference or user-specific setting. Per the BOOLEANS/FLAGS rule, feature flags and configuration booleans on non-user rows → system.operations."
+      },
+      {
+        "name": "reported_content_email_notifications",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a boolean configuration flag at the course level that enables/disables email notifications when content is reported for abuse. It is a course-wide moderation setting, not a user preference or user-specific notification opt-in. Per the BOOLEANS/FLAGS rule, configuration flags on system/course rows → system.operations. (If this were a per-user notification preference, it would be user.privacy_preferences, but it is a course-level setting.)"
+      },
+      {
+        "name": "_divided_discussions",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "_divided_discussions is a TextField storing a JSON list of discussion IDs that are explicitly configured as divided. This is course-level configuration metadata specifying which discussions should be split by cohort/enrollment track. It contains no user data—only identifiers of course structure elements. Per DOMAIN RULES, course configuration and catalog references → system.operations."
+      },
+      {
+        "name": "division_scheme",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "division_scheme is a CharField with choices ('none', 'cohort', 'enrollment_track') that specifies the course-level discussion division strategy. This is a course configuration setting that controls platform behavior, not user data. Per DOMAIN RULES, configuration choices and course-level settings → system.operations."
+      }
+    ],
+    "django_app": "django_comment_common",
+    "source_file": "openedx/core/djangoapps/django_comment_common/models.py",
+    "n_fields": 6,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "Bookmark": {
+    "table_semantic_summary": "The Bookmark table stores user-selected content references within courses. Each bookmark record represents a user's choice to mark a specific XBlock (course content unit) for later reference. The table denormalizes course and path information for performance, caching the hierarchical location of the bookmarked block within the course structure. This is a user-curated content selection mechanism, not an engagement tracking or profiling system.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to Django's auth_user (User model), which is a PERSON-LIKE entity per the reference list. Rule 1 applies: FK directly to auth_user → user.unique_id. This field identifies which user owns the bookmark."
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField storing a course identifier (e.g., 'course-v1:edX+DemoX+Demo_Course'). This is a denormalized reference to a course catalog entity (CourseOverview is a LOOKUP/CATALOG table per the reference list). Per the CRITICAL RULE on FK transitivity and the COMMON MISTAKES section: course_id/course_key is a platform reference to a course, not user data, regardless of the fact that courses contain user enrollments. → system.operations."
+      },
+      {
+        "name": "usage_key",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "UsageKeyField identifying the specific XBlock the user bookmarked. Although syntactically it is a catalog identifier (pointing to a block in the course structure), the DOMAIN RULES Rule 6 (USER-GENERATED OR USER-SELECTED CONTENT) applies: 'Seleccionado/curado por el usuario: bookmarks, favoritos, XBlocks elegidos — aunque sean pointers a contenido catalog, la ELECCIÓN del usuario ES su dato privado.' The usage_key represents the user's deliberate selection/curation of content, not engagement tracking. → user.content.private."
+      },
+      {
+        "name": "_path",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "JSONField storing a denormalized hierarchical path from course root to the bookmarked block, serialized as [(usage_key_str, display_name), ...]. This is cached metadata about the user's selected content. Per Rule 6, user-selected content (bookmarks and their associated path/location data) is user.content.private. The path is part of the user's bookmark record and represents the structure of content they chose to bookmark. → user.content.private."
+      },
+      {
+        "name": "xblock_cache",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "ForeignKey to XBlockCache, a CONFIGURATION/EXTENSION table (per the reference list: 'Cache/track/schedules/modulestore infra'). XBlockCache stores platform-level cached metadata (display_name, paths) about XBlocks for performance. Per the FK DECISION TREE Rule 2: FK to a LOOKUP/CATALOG or CONFIGURATION table → system.operations. This is a pointer to a system catalog/cache entity, not a person-like entity. The FK itself is system.operations (though the display_name it references may be part of the user's content, the FK relationship is to a system infrastructure table)."
+      }
+    ],
+    "django_app": "bookmarks",
+    "source_file": "openedx/core/djangoapps/bookmarks/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "IDVerificationAttempt": {
+    "table_semantic_summary": "IDVerificationAttempt is an abstract base model that records a learner's identity verification attempt through various methods (photo, SSO, manual). It tracks the verification workflow lifecycle from creation through approval/denial, storing the user's identity snapshot (name at time of verification), temporal metadata (creation/update timestamps), and expiration information. The model serves as the foundation for multiple verification subclasses and is used to determine user eligibility for verified certificates and course access.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to Django's auth_user (User model), which is a PERSON-LIKE entity per the reference list. Per FK DECISION TREE Rule 1: direct reference to a person-like entity → user.unique_id. This field links the verification attempt to the learner performing the verification."
+      },
+      {
+        "name": "name",
+        "category": "user.name",
+        "data_subject": "USUARIO",
+        "reasoning": "Stores the user's full name as a snapshot at the time of verification (copied during mark_ready()). Per DOMAIN RULES Rule 2 (IDENTITY/CONTACT): full_name → user.name. This is the learner's real name captured for identity verification purposes, not a username or account identifier."
+      },
+      {
+        "name": "created_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField recording when the verification attempt was initiated. Per DOMAIN RULES Rule 9 (TIMESTAMPS): created_at, updated_at, modified → system.operations (default). This is a lifecycle/audit timestamp, not captured for engagement profiling or tracking purposes. It serves as a record of when the verification workflow began."
+      },
+      {
+        "name": "updated_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField auto-updated on every save. Per DOMAIN RULES Rule 9 (TIMESTAMPS): created_at, updated_at, modified → system.operations. This is a record-level lifecycle timestamp used for audit and query optimization (indexed), not for user engagement tracking or profiling."
+      },
+      {
+        "name": "expiration_date",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "DateTimeField defining when the verification expires (default: created_at + DAYS_GOOD_FOR setting). Per DOMAIN RULES Rule 9 (TIMESTAMPS): expiration_date, archived_at → system.operations. This is a lifecycle/validity timestamp that controls the temporal scope of the verification credential, not engagement tracking. It is used in active_at_datetime() to determine if verification is still valid."
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "PhotoVerification": {
+    "table_semantic_summary": "PhotoVerification is an identity verification attempt record that tracks a student's submission of biometric data (face photo and government ID photo) through a multi-stage approval workflow. It records the lifecycle of verification from initial image upload through external service review (Software Secure) to final approval or denial, capturing both the biometric content and the administrative/operational metadata of the verification process.",
+    "fields": [
+      {
+        "name": "face_image_url",
+        "category": "user.biometric",
+        "data_subject": "USUARIO",
+        "reasoning": "Stores an encrypted URL to the user's facial photograph, which is biometric data used for identity verification. Per Domain Rule 5, face images in the verify_student app are classified as user.biometric, as they are encoded characteristics provided by the user for identity verification purposes."
+      },
+      {
+        "name": "photo_id_image_url",
+        "category": "user.biometric",
+        "data_subject": "USUARIO",
+        "reasoning": "Stores an encrypted URL to the user's government-issued ID photograph (driver's license, passport, etc.), which is biometric data used for identity verification. Per Domain Rule 5, photo ID images in the verify_student app are classified as user.biometric, as they are encoded characteristics used for identity verification."
+      },
+      {
+        "name": "receipt_id",
+        "category": "user.unique_id.pseudonymous",
+        "data_subject": "USUARIO",
+        "reasoning": "A randomly generated UUID that serves as an opaque, non-correlatable identifier for the verification attempt. It is minted by the platform specifically to prevent exposing the user's actual ID to external services (Software Secure) during callbacks. Per the ID and UUID Rule (Question 4), this is a platform-generated identifier specifically designed to be non-correlatable to the user's main identity, making it pseudonymous."
+      },
+      {
+        "name": "display",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO",
+        "reasoning": "A boolean flag that controls whether the verification status is displayed on the student's dashboard. This represents a user preference or setting about how their verification data is presented to them. Per Domain Rule 10 (Booleans/Flags), privacy-related display preferences are classified as user.privacy_preferences."
+      },
+      {
+        "name": "submitted_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A timestamp recording when the verification attempt was submitted to the external service. Per Domain Rule 9 (Timestamps), all timestamps default to system.operations unless explicitly captured for engagement/profiling tracking. This timestamp is a lifecycle/audit record of the verification process, not engagement tracking."
+      },
+      {
+        "name": "reviewing_user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "A foreign key to the User model (auth_user) representing the staff member who reviewed and approved/denied the verification. Per FK Decision Tree Rule 1, a FK directly to a PERSON-LIKE entity (auth_user) is classified as user.unique_id. The data_subject is USUARIO because it identifies which user (the reviewer) performed the action, though the reviewing_user themselves is a staff member, not the student being verified."
+      },
+      {
+        "name": "reviewing_service",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A string field recording the name of the external service (e.g., 'Software Secure') or internal process that reviewed the verification. This is operational metadata about which system component processed the verification, not user data. It is a platform-level reference to a service/system, not information about the user."
+      },
+      {
+        "name": "error_msg",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "A text field containing the human-readable explanation of why a verification was denied or encountered a system error. This is outcome data about the user's verification attempt—it describes the result/status of the user's submission. Per Domain Rule 4, outcome data about the user (including denial reasons) is classified as user.content.private, not user.behavior. It is information about the user's verification, not engagement tracking."
+      },
+      {
+        "name": "error_code",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A machine-readable code (e.g., 'NAME_MISMATCH', 'QUALITY_ISSUE') that categorizes the type of verification failure. While it relates to the user's verification outcome, it is a system-level classification code used for analytics and error aggregation. It is operational metadata for system processing and reporting, not personal data about the user themselves."
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py",
+    "n_fields": 9,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "VerificationAttempt": {
+    "table_semantic_summary": "VerificationAttempt is a platform-agnostic identity verification (IDV) record that tracks the lifecycle of a user's identity verification attempt across multiple IDV implementations. It stores the verified name, verification status (created/pending/approved/denied), expiration date of the verification credential, and metadata controlling whether the verification status is displayed to the user. This table serves as a unified interface for IDV plugins to record verification outcomes and for the platform to query user verification eligibility.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey directly to auth_user (PERSON-LIKE entity per the reference list). Per FK DECISION TREE Rule 1: target is a person-like entity → user.unique_id. Data subject is USUARIO."
+      },
+      {
+        "name": "name",
+        "category": "user.name",
+        "data_subject": "USUARIO",
+        "reasoning": "Stores the full name being verified during identity verification. This is the user's real name as captured/verified during the IDV process. Per Domain Rule 2 (IDENTITY/CONTACT): full_name → user.name. Although denormalized from the user profile, the field semantically represents the user's verified identity name."
+      },
+      {
+        "name": "expiration_datetime",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Timestamp indicating when the verification credential expires. Per Rule 9 (TIMESTAMPS): default classification is system.operations. This field records the lifecycle/validity period of the verification record, not engagement tracking or profiling. It is a record-level metadata timestamp, not captured for user behavior analysis."
+      },
+      {
+        "name": "hide_status_from_user",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO",
+        "reasoning": "Boolean flag controlling whether the verification status is displayed to the user. Per Rule 10 (BOOLEANS/FLAGS): this is a user-level preference/setting that governs what information is revealed to the user about their own verification. This is a privacy preference decision, not an authorization permission or account setting."
+      },
+      {
+        "name": "created_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Timestamp recording when the verification attempt was created. Per Rule 9 (TIMESTAMPS): default classification is system.operations. This is a record-level lifecycle timestamp (auto_now_add), not captured for engagement tracking or profiling purposes."
+      },
+      {
+        "name": "updated_at",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Timestamp recording when the verification attempt was last modified. Per Rule 9 (TIMESTAMPS): default classification is system.operations. This is a record-level audit timestamp (auto_now), not captured for engagement tracking or profiling purposes."
+      }
+    ],
+    "django_app": "verify_student",
+    "source_file": "lms/djangoapps/verify_student/models.py",
+    "n_fields": 6,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "UserAgreement": {
+    "table_semantic_summary": "UserAgreement is a system-level catalog table that stores platform agreements (terms of service, privacy policies, etc.) that users can accept to gate access to platform features. It contains the agreement's metadata (type identifier, display name, summary), content (full text or external URL), and versioning timestamps. The table itself is NOT person-specific; it defines the agreement templates that are referenced by UserAgreementRecord when users accept them.",
+    "fields": [
+      {
+        "name": "type",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'type' field is a unique identifier for the agreement template itself (e.g., 'terms_of_service', 'privacy_policy'). It is a lookup/catalog identifier for a platform-level agreement definition, not user data. It serves as the primary key for agreement retrieval and is used to link UserAgreementRecord rows to specific agreement types. Per the LOOKUP/CATALOG rule, this is system.operations."
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'name' field is a human-readable label for the agreement type (e.g., 'Terms of Service'). It is platform-authored content describing the agreement template, not user-generated or user-specific data. It is part of the agreement catalog metadata displayed to users, not data about the user. Per the LOOKUP/CATALOG rule, this is system.operations."
+      },
+      {
+        "name": "summary",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'summary' field contains a brief platform-authored description of the agreement content (e.g., 'By accepting, you agree to our terms...'). It is static catalog metadata that describes the agreement template, not user data or user-generated content. It is displayed to users as part of the agreement acceptance flow but is not data about the user. Per the LOOKUP/CATALOG rule, this is system.operations."
+      },
+      {
+        "name": "text",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'text' field stores the full agreement content (legal text, terms, policies). This is platform-authored legal/policy content that defines the agreement template. It is not user data, user-generated content, or user-specific information. It is a static agreement document stored in the database as an alternative to hosting it externally. Per the LOOKUP/CATALOG rule, agreement templates are system.operations."
+      },
+      {
+        "name": "url",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'url' field contains an external link to the agreement content (e.g., 'https://example.com/terms'). This is a reference to platform-hosted or external agreement documentation, not user data. It is part of the agreement template metadata that directs users to the full agreement text. Per the LOOKUP/CATALOG rule, this is system.operations."
+      },
+      {
+        "name": "created",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'created' field is an auto-generated timestamp recording when the agreement template was first created in the system. Per Rule 9 (TIMESTAMPS), this is a lifecycle/audit timestamp on a non-person-like table (the agreement catalog). It is not captured for engagement tracking or profiling; it is a record of when the agreement definition was introduced. Default classification for timestamps is system.operations."
+      },
+      {
+        "name": "updated",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "The 'updated' field is a timestamp recording the last modification to the agreement template. Although it is semantically important for determining whether a user's acceptance is stale (compared against UserAgreementRecord.timestamp), the field itself is a lifecycle/audit timestamp on the agreement catalog table, not user data. Per Rule 9 (TIMESTAMPS), lifecycle timestamps default to system.operations. The user's acceptance decision and its timestamp are captured in UserAgreementRecord, which is where user.privacy_preferences would apply."
+      }
+    ],
+    "django_app": "agreements",
+    "source_file": "openedx/core/djangoapps/agreements/models.py",
+    "n_fields": 7,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "LTIPIISignature": {
+    "table_semantic_summary": "LTIPIISignature stores user consent records for sharing personally identifiable information (PII) with LTI (Learning Tools Interoperability) tools in a specific course. Each record captures a user's acknowledgement decision, the list of LTI tools they consented to share PII with, and a hash for efficient validation of whether the consent remains current as course LTI tool configurations change.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "ForeignKey to auth_user (a PERSON-LIKE entity per the reference list). Rule 1 applies: FK to auth_user → user.unique_id. This field identifies which user gave the PII consent acknowledgement."
+      },
+      {
+        "name": "course_key",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "CourseKeyField referencing a course identifier (a LOOKUP/CATALOG table per the reference list). Rule 2 applies: FK to a course catalog entity → system.operations. The course_key is a platform-level reference to scope the consent to a specific course, not user-generated or user-selected content."
+      },
+      {
+        "name": "lti_tools",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO",
+        "reasoning": "JSONField storing the list of LTI tools the user explicitly consented to receive their PII. Rule 11 (CONSENT/AGREEMENTS) applies: this field captures the user's consent decision and the scope of that decision. The field documents which tools the user authorized to receive PII, making it a privacy preference/consent record rather than system configuration."
+      },
+      {
+        "name": "lti_tools_hash",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO",
+        "reasoning": "IntegerField storing a hash of lti_tools used for efficient comparison to detect consent staleness. Rule 11 (CONSENT/AGREEMENTS) applies: this hash is evidence of the user's consent decision at a point in time. It serves as a validation mechanism for the privacy preference (consent) recorded in lti_tools, enabling the system to determine if re-acknowledgement is needed when course LTI tools change."
+      }
+    ],
+    "django_app": "agreements",
+    "source_file": "openedx/core/djangoapps/agreements/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "Catalog": {
+    "table_semantic_summary": "The Catalog table is a non-Django-managed proxy model that represents course catalogs from the external Course Discovery service. It stores metadata about curated collections of courses (name, Elasticsearch query filter) and tracks which users have access to view/manage each catalog. This is a LOOKUP/CATALOG table under system.operations per the Open edX domain rules.",
+    "fields": [
+      {
+        "name": "id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Auto-generated primary key for a non-person-like lookup/catalog table (Catalog is a course discovery reference entity, not a person-like entity). Per ID Rule QUESTION 2: 'Is it an auto-generated PK for a NON person-like table?' → system.operations. The Catalog table is explicitly listed in LOOKUP/CATALOG TABLES reference list."
+      },
+      {
+        "name": "name",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Human-readable name/label for a catalog entity (e.g., 'Engineering Courses'). This is descriptive metadata about a platform-level course collection, not personal data about a user. Per LOOKUP/CATALOG TABLES rule: 'Any table that catalogs platform-level reference data' → system.operations. The name field describes the catalog itself, not user information."
+      },
+      {
+        "name": "query",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Elasticsearch query string that defines which courses belong to this catalog (e.g., '*', 'subject:engineering'). This is configuration/filter logic for the platform's course discovery system, not user data. It is system-level operational metadata that controls catalog behavior, not information about or belonging to a user."
+      },
+      {
+        "name": "viewers",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "Comma-separated or list of usernames with access to view/manage this catalog. This field directly encodes which users are authorized to access a specific resource (the catalog). Per Rule 10 (BOOLEANS/FLAGS) and authorization semantics: 'can_enroll, has_permission (per-user)' → user.authorization. The viewers field captures the scope of permissions granted to users for this catalog resource, making it authorization data."
+      }
+    ],
+    "django_app": "api_admin",
+    "source_file": "openedx/core/djangoapps/api_admin/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "CommerceConfiguration": {
+    "table_semantic_summary": "CommerceConfiguration is a system-level configuration table (ConfigurationModel subclass) that stores platform-wide settings for e-commerce integration, including feature flags for external checkout routing, API endpoint paths, caching behavior, and refund processing automation. It contains no personal data and is used to control how the LMS interacts with an external E-Commerce service.",
+    "fields": [
+      {
+        "name": "checkout_on_ecommerce_service",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a feature flag on a ConfigurationModel (a CONFIGURATION/EXTENSION table per the entity reference list). It controls platform-level behavior for routing checkout to an external service. Configuration flags are always system.operations, not person-like data. The flag itself does not store or reference any user data; it is a system control mechanism."
+      },
+      {
+        "name": "basket_checkout_page",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a CharField storing a relative URL path to the external e-commerce service's checkout endpoint (e.g., '/basket/add/'). It is a platform-level configuration value that defines how the system routes requests to an external service. URL paths and API endpoint configurations are system.operations, not user data. No personal information is stored or referenced."
+      },
+      {
+        "name": "cache_ttl",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a PositiveIntegerField storing cache time-to-live in seconds for e-commerce API responses. It is a system performance/operations parameter that controls caching behavior at the platform level. Caching configuration is infrastructure metadata and falls under system.operations. It does not store or reference any user data."
+      },
+      {
+        "name": "receipt_page",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a CharField storing a relative URL path to the order receipt page (e.g., '/checkout/receipt/?order_number='). Although deprecated and retained for backward compatibility, it is a platform-level URL configuration for the external e-commerce service. Like basket_checkout_page, it is a system endpoint configuration, not user data."
+      },
+      {
+        "name": "enable_automatic_refund_approval",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This is a BooleanField feature flag on a ConfigurationModel that controls whether refund requests are automatically approved without manual intervention. It is a platform-level operational setting that determines refund processing workflow behavior. Configuration flags are always system.operations per the entity reference list. The flag does not store or reference any user data; it controls system behavior."
+      }
+    ],
+    "django_app": "commerce",
+    "source_file": "lms/djangoapps/commerce/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "ApiAccessRequest": {
+    "table_semantic_summary": "ApiAccessRequest tracks third-party API access requests from users. It captures the user's identity, their organization details, the business justification for API access, and the approval workflow state (pending/approved/denied). The table also records whether the user has been notified of the decision. This is a gating mechanism for API credential issuance and serves as an audit trail for API access governance.",
+    "fields": [
+      {
+        "name": "user",
+        "category": "user.unique_id",
+        "data_subject": "USUARIO",
+        "reasoning": "OneToOneField to auth_user (a PERSON-LIKE entity per the reference list). Per FK DECISION TREE Step 1, direct reference to a natural person → user.unique_id. This field identifies which user is requesting API access."
+      },
+      {
+        "name": "status",
+        "category": "user.authorization",
+        "data_subject": "USUARIO",
+        "reasoning": "CharField with choices (pending/approved/denied) that determines the user's scope of permissions and access to the API system. Per Rule 10 (Booleans/Flags) and the authorization semantics, this field directly gates whether the user can access the API. It represents the user's authorization state, not a system configuration."
+      },
+      {
+        "name": "website",
+        "category": "user.contact.url",
+        "data_subject": "USUARIO",
+        "reasoning": "URLField storing the organization's website URL provided by the user during the API access request. Per Rule 3 (Identity/Contact), this is a user-provided contact URL associated with the user's organization. It is user-generated contact information about the requester's business presence."
+      },
+      {
+        "name": "reason",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "TextField containing free-text justification written by the user explaining why they need API access. Per Rule 6 (User-Generated Content), free-text justifications provided by the user are classified as user.content.private. This is content created by the user to support their request."
+      },
+      {
+        "name": "company_name",
+        "category": "user.contact.organization",
+        "data_subject": "USUARIO",
+        "reasoning": "CharField storing the name of the user's organization. Per Rule 3 (Identity/Contact) and the taxonomy entry for user.contact.organization ('Data Subject's Organization'), this field directly captures the organization information provided by the user as part of their contact/identity data."
+      },
+      {
+        "name": "company_address",
+        "category": "user.contact.address",
+        "data_subject": "USUARIO",
+        "reasoning": "CharField storing the organization's contact address provided by the user. Per Rule 3 (Identity/Contact), mailing_address and contact address data are classified as user.contact.address. This is address information about the user's organization."
+      },
+      {
+        "name": "site",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "ForeignKey to Django's Site model (a LOOKUP/CATALOG table per the reference list). Per FK DECISION TREE Step 2, Site is a platform-level configuration/reference table, not a PERSON-LIKE entity. This field identifies which site instance the request belongs to for multi-site deployments."
+      },
+      {
+        "name": "contacted",
+        "category": "user.privacy_preferences",
+        "data_subject": "USUARIO",
+        "reasoning": "BooleanField tracking whether the user has been notified of the decision on their API access request. Per Rule 10 (Booleans/Flags) and the signal handler logic (line 218 in models.py sets contacted=True after sending decision email), this field records the user's notification state and consent/communication preference. It indicates whether the user has been contacted with the decision."
+      }
+    ],
+    "django_app": "api_admin",
+    "source_file": "openedx/core/djangoapps/api_admin/models.py",
+    "n_fields": 8,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "WaffleFlagCourseOverrideModel": {
+    "table_semantic_summary": "WaffleFlagCourseOverrideModel is a configuration table that stores course-level feature flag overrides. It allows administrators to force specific waffle flags on or off for individual courses, overriding platform defaults and org-level settings. This is a system configuration entity, not a user data table.",
+    "fields": [
+      {
+        "name": "waffle_flag",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores the name/identifier of a feature flag (e.g., 'my_namespace.some_course_feature'). It is a reference to a platform-level configuration entity, not user data. Per the LOOKUP/CATALOG TABLES rule, configuration identifiers are classified as system.operations. The field is used to look up which feature flag is being overridden, making it operational metadata about the system's feature control."
+      },
+      {
+        "name": "course_id",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores a CourseKey (e.g., 'course-v1:edx+100+Demo'), which is a reference to a course in the platform's course catalog. Per the FK DECISION TREE and CRITICAL RULE (NO FK TRANSITIVITY), course_id directly references CourseOverview (a LOOKUP/CATALOG table), not a person-like entity. The fact that a course may contain user enrollments does not make course_id user data—it is a platform-level reference. Therefore, course_id = system.operations."
+      },
+      {
+        "name": "override_choice",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores a choice value ('on' or 'off') that controls the state of a feature flag for a course. It is a configuration parameter that determines system behavior, not data about a user. Per the CONFIGURATION/EXTENSION TABLES rule, ConfigurationModel subclasses and feature flag settings are classified as system.operations. This field is operational metadata controlling platform functionality."
+      },
+      {
+        "name": "note",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "This field stores free-text documentation (e.g., 'Disabled for testing Q4 2024', 'Required for pilot group') explaining why the override exists and when it can be removed. Although it is free text, it is administrative/operational documentation about a system configuration, not user-generated content or user data. It serves as audit/maintenance metadata for the configuration record itself, classifying it as system.operations."
+      }
+    ],
+    "django_app": "waffle_utils",
+    "source_file": "openedx/core/djangoapps/waffle_utils/models.py",
+    "n_fields": 4,
+    "condition": "c1",
+    "temperature": 0.0
+  },
+  "StagedContentFile": {
+    "table_semantic_summary": "StagedContentFile stores temporary static assets (files) associated with staged content during clipboard operations and library syncing. Each record represents a single file with its metadata (filename, hash, source origin) and optional binary content. The table is transient—files are deleted when their parent StagedContent expires or is removed.",
+    "fields": [
+      {
+        "name": "for_content",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "Foreign key to StagedContent, a non-person-like table that represents a staging container for OLX content. Per the FK decision tree, this is not a PERSON-LIKE entity (not auth_user or UserProfile), and StagedContent is a system-level staging/clipboard infrastructure table. Therefore, the FK is classified as system.operations. The FK does not directly identify a user; it identifies a staging record."
+      },
+      {
+        "name": "filename",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A plain text field storing the original filename of a static asset (e.g., 'image.png', 'transcript.vtt'). This is a catalog/reference identifier for a file in the staging system, not user-generated content or personal data. It is metadata about the file's origin in the platform's asset management system."
+      },
+      {
+        "name": "data_file",
+        "category": "user.content.private",
+        "data_subject": "USUARIO",
+        "reasoning": "This FileField stores the actual binary content of files that users have copied to their clipboard or staged for import. These files originate from user-created or user-selected content (e.g., course materials, XBlock assets, uploaded documents). Although the field is optional and may be empty for large files (>10MB), when present it contains user-curated or user-generated content. Per Rule 6 (USER-GENERATED OR USER-SELECTED CONTENT), such content defaults to user.content.private because it represents content the user has selected or created, even if it is a pointer to platform assets."
+      },
+      {
+        "name": "source_key_str",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A denormalized string representation of the file's origin (either an AssetKey from course Files & Uploads or a UsageKey/ContainerKey from XBlock filesystem). This is a platform-level reference identifier used for asset tracking and re-import logic. It is metadata about where the file came from in the system's asset catalog, not personal or user-identifying data. It is a pointer to system infrastructure, not user content."
+      },
+      {
+        "name": "md5_hash",
+        "category": "system.operations",
+        "data_subject": "SYSTEM",
+        "reasoning": "A computed MD5 hash of the file content used for deduplication and integrity checking. This is a cryptographic checksum—a system-level integrity and deduplication mechanism. It is not personal data, biometric data, or user-identifying information. It serves a purely operational purpose in the staging system."
+      }
+    ],
+    "django_app": "content_staging",
+    "source_file": "openedx/core/djangoapps/content_staging/models.py",
+    "n_fields": 5,
+    "condition": "c1",
+    "temperature": 0.0
+  }
+}
