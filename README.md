@@ -8,6 +8,8 @@ Se puede encontrar el abstract asociado en [`abstract.md`](abstract.md).
 
 Lebrely es el clasificador automático de datos de [Privai](https://privai.cl). Este repositorio documenta un protocolo reproducible para validar su desempeño sobre un dominio público (Open edX, LMS open-source usado por instituciones educativas estatales chilenas) y contiene los datos y resultados del experimento reportado en el abstract.
 
+Un caso de uso previo de Lebrely en producción sobre una empresa B2B (2,173 campos, 85.96% exact match) está documentado en [este artículo](https://v2.privai.cl/blog/como-construimos-clasificador-datos-automatico).
+
 ## Qué hay
 
 | Carpeta | Contenido |
@@ -89,6 +91,8 @@ The associated abstract can be found at [`abstract.md`](abstract.md).
 ## About this repository
 
 Lebrely is [Privai](https://privai.cl)'s automated data classifier. This repository documents a reproducible protocol to validate its performance on a public domain (Open edX, an open-source LMS used by Chilean state-run educational institutions) and contains the data and results of the experiment reported in the abstract.
+
+A previous production use case of Lebrely on a B2B company (2,173 fields, 85.96% exact match) is documented in [this article](https://v2.privai.cl/blog/como-construimos-clasificador-datos-automatico).
 
 ## What is here
 
