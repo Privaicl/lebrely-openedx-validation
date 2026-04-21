@@ -51,20 +51,23 @@ def _configure_temperature(temperature: float | None) -> None:
         return
     os.environ["CLAUDE_CODE_EXTRA_BODY"] = json.dumps({"temperature": float(temperature)})
 
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
-
+# Private Privai imports (see README "Qué NO hay" / "What is NOT here"):
+# - `app.*` is the Lebrely classifier itself.
+# - `openedx_prompt.OPENEDX_PROMPT` is the domain prompt, also a Privai product.
+# Both are published via name only; their contents are not in this repo.
 from app.agents.classification import ClassificationConfig, classify_table
 from app.taxonomy.fides import DEFAULT_TAXONOMY, filter_deprecated
+from openedx_prompt import OPENEDX_PROMPT
 
-from scripts.openedx.ablation import CONDITIONS, apply_condition, output_filename
-from scripts.openedx.openedx_prompt import OPENEDX_PROMPT
+# Local sibling modules.
+from ablation import CONDITIONS, apply_condition, output_filename
 
 
-SCRIPT_DIR = Path(__file__).parent
-SAMPLE_CSV = SCRIPT_DIR / "openedx_sample.csv"
-MODELS_JSON = SCRIPT_DIR / "openedx_models.json"
-RUN_LOG = SCRIPT_DIR / "openedx_predictions_run.log"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+SAMPLE_CSV = REPO_ROOT / "data" / "openedx_sample.csv"
+MODELS_JSON = REPO_ROOT / "data" / "openedx_models.json"
+PREDICTIONS_DIR = REPO_ROOT / "classification"
+RUN_LOG = PREDICTIONS_DIR / "openedx_predictions_run.log"
 
 OPENEDX_REPO = os.environ.get("OPENEDX_REPO", "./openedx-platform")
 DATA_SUBJECTS = ["USUARIO", "SYSTEM"]
@@ -184,7 +187,7 @@ async def main() -> None:
 
     _configure_temperature(args.temperature)
 
-    predictions_path = SCRIPT_DIR / output_filename(args.condition, args.temperature)
+    predictions_path = PREDICTIONS_DIR / output_filename(args.condition, args.temperature)
 
     if args.clean and predictions_path.exists():
         predictions_path.unlink()

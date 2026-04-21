@@ -19,7 +19,7 @@ Lebrely es el clasificador automático de datos de [Privai](https://privai.cl). 
 
 ## Qué NO hay
 
-**El clasificador Lebrely (`app/` en el repo privado de Privai) no está incluido.** Es producto comercial separado. Los scripts que orquestan la clasificación (`usage_analysis_agent.py`, `ablation.py`) contienen `from app. ...` que no resuelven fuera del entorno de Privai. Se publican para transparencia metodológica, pudiendo observarse la lógica de orquestación y las transformaciones de ablación, pero no re-ejecutar la clasificación.
+**El clasificador Lebrely (`app/` en el repo privado de Privai) y el prompt de dominio (`openedx_prompt.OPENEDX_PROMPT`) no están incluidos.** Son productos comerciales de Privai. Los scripts que orquestan la clasificación (`usage_analysis_agent.py`, `ablation.py`) contienen imports privados que no resuelven fuera del entorno de Privai — `from app. ...` (el clasificador) y `from openedx_prompt import OPENEDX_PROMPT` (el prompt). Se publican con los nombres visibles para transparencia metodológica, pudiendo observarse la lógica de orquestación y las transformaciones de ablación, pero no re-ejecutar la clasificación.
 
 Los scripts de análisis (`compare_and_evaluate.py`, `ablation_report.py`, `stratify_and_sample.py`, `extract_models.py`) SÍ corren sin Lebrely y permiten reproducir todas las tablas y figuras del abstract a partir de las predicciones ya almacenadas.
 
@@ -41,7 +41,7 @@ Los otros tres scripts de análisis no requieren `OPENEDX_REPO`: leen los artefa
 
 ## Verificación del Clasificador (resumen)
 
-1. **Inventario** (`scripts/extract_models.py`): parsea todos los `models.py` de Open edX con tree-sitter y extrae 271 modelos Django, `data/openedx_inventory.csv` y `data/openedx_models.json`.
+1. **Inventario** (`scripts/extract_models.py`): parsea todos los `models.py` de Open edX con tree-sitter y extrae 272 modelos Django, `data/openedx_inventory.csv` y `data/openedx_models.json`.
 2. **Estratificación y muestra** (`scripts/stratify_and_sample.py`): produce `data/openedx_sample.csv`.
 
    - **2a. Asignación de estrato.** Cada modelo Django se asigna a 1 de 5 estratos vía un mapping explícito `django_app > estrato` (22 apps nombradas). Apps que no aparecen en el mapping caen en el estrato `operational` por defecto. Estratos y apps:
@@ -101,7 +101,7 @@ Lebrely is [Privai](https://privai.cl)'s automated data classifier. This reposit
 
 ## What is NOT here
 
-**The Lebrely classifier (`app/` in the private Privai repo) is not included.** It is a separate commercial product. The scripts that orchestrate the classification (`usage_analysis_agent.py`, `ablation.py`) contain `from app. ...` imports that do not resolve outside the Privai environment. They are published for methodological transparency — the orchestration logic and the ablation transformations can be inspected, but the classification cannot be re-executed.
+**The Lebrely classifier (`app/` in the private Privai repo) and the domain prompt (`openedx_prompt.OPENEDX_PROMPT`) are not included.** Both are Privai commercial products. The scripts that orchestrate the classification (`usage_analysis_agent.py`, `ablation.py`) contain private imports that do not resolve outside the Privai environment — `from app. ...` (the classifier) and `from openedx_prompt import OPENEDX_PROMPT` (the prompt). They are published with names visible for methodological transparency — the orchestration logic and the ablation transformations can be inspected, but the classification cannot be re-executed.
 
 The analysis scripts (`compare_and_evaluate.py`, `ablation_report.py`, `stratify_and_sample.py`, `extract_models.py`) DO run without Lebrely and can reproduce all tables and figures in the abstract from the stored predictions.
 
@@ -123,7 +123,7 @@ The other three analysis scripts do not require `OPENEDX_REPO`: they read the ar
 
 ## Classifier verification (summary)
 
-1. **Inventory** (`scripts/extract_models.py`): parses every `models.py` under Open edX with tree-sitter and extracts 271 Django models, `data/openedx_inventory.csv` and `data/openedx_models.json`.
+1. **Inventory** (`scripts/extract_models.py`): parses every `models.py` under Open edX with tree-sitter and extracts 272 Django models, `data/openedx_inventory.csv` and `data/openedx_models.json`.
 2. **Stratification and sampling** (`scripts/stratify_and_sample.py`): produces `data/openedx_sample.csv`.
 
    - **2a. Stratum assignment.** Each Django model is assigned to one of 5 strata via an explicit `django_app > stratum` mapping (22 named apps). Apps not present in the mapping fall into the default `operational` stratum. Strata and apps:
